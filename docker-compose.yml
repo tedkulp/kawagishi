@@ -7,16 +7,24 @@ services:
       - 27017:27017
     volumes:
       - "./db_data:/data/db"
+    labels:
+      - "traefik.enable=false"
   api:
     image: node
     volumes:
       - ".:/usr/src/app"
+    ports:
+      - 8888:8888
+      - 1935:1935
     working_dir: /usr/src/app
     command: npm run server-watch
     labels:
-      # - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=PathPrefix(`/api`)"
-      - "traefik.http.services.api.loadbalancer.server.port=3000"
+      - "traefik.api2.weight=3"
+      - "traefik.api2.port=8888"
+      - "traefik.api2.frontend.rule=PathPrefixStrip:/api/media;AddPrefix:/api"
+      - "traefik.api1.weight=2"
+      - "traefik.api1.port=3000"
+      - "traefik.api1.frontend.rule=PathPrefix:/api"
   web:
     image: node
     volumes:
@@ -26,16 +34,17 @@ services:
     working_dir: /usr/src/app
     command: npm run start-docker
     labels:
-      # - "traefik.enable=true"
-      - "traefik.http.routers.web.rule=PathPrefix(`/`)"
-      - "traefik.http.services.web.loadbalancer.server.port=1234"
+      - "traefik.port=1234"
+      - "traefik.weight=1"
+      - "traefik.frontend.rule=PathPrefix:/"
   traefik:
-    image: traefik:v2.0
+    image: traefik
     restart: unless-stopped
-    # command: --api.insecure=true --providers.docker --providers.docker.exposedbydefault=false
-    command: --api.insecure=true --providers.docker
+    command: --api --docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.enable=false"
     ports:
       - 8000:80
       - 8001:8080

@@ -2,6 +2,8 @@ const express = require('express');
 const app = express();
 const port = 3000;
 
+const nms = require('./lib/media_server');
+
 // Add on the top next to imports
 const passport = require('./lib/auth/passport');
 
@@ -14,3 +16,4 @@ app.use('/api/v1/login', require('./lib/routes/login'));
 app.use('/api/v1/signup', require('./lib/routes/signup'));
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+nms.run();
