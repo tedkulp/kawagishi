@@ -1,0 +1,41 @@
+version: '3'
+services:
+  mongo:
+    image: mongo
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+    volumes:
+      - "./db_data:/data/db"
+  api:
+    image: node
+    volumes:
+      - ".:/usr/src/app"
+    working_dir: /usr/src/app
+    command: npm run server-watch
+    labels:
+      # - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=PathPrefix(`/api`)"
+      - "traefik.http.services.api.loadbalancer.server.port=3000"
+  web:
+    image: node
+    volumes:
+      - ".:/usr/src/app"
+    ports:
+      - 1235:1235
+    working_dir: /usr/src/app
+    command: npm run start-docker
+    labels:
+      # - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=PathPrefix(`/`)"
+      - "traefik.http.services.web.loadbalancer.server.port=1234"
+  traefik:
+    image: traefik:v2.0
+    restart: unless-stopped
+    # command: --api.insecure=true --providers.docker --providers.docker.exposedbydefault=false
+    command: --api.insecure=true --providers.docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 8000:80
+      - 8001:8080
