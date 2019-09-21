@@ -10,21 +10,29 @@ services:
     labels:
       - "traefik.enable=false"
   api:
-    image: node
+    image: tedkulp/node-ffmpeg
     volumes:
       - ".:/usr/src/app"
     ports:
       - 8888:8888
-      - 1935:1935
+      # - 1935:1935
     working_dir: /usr/src/app
     command: npm run server-watch
     labels:
-      - "traefik.api2.weight=3"
-      - "traefik.api2.port=8888"
-      - "traefik.api2.frontend.rule=PathPrefixStrip:/api/media;AddPrefix:/api"
-      - "traefik.api1.weight=2"
-      - "traefik.api1.port=3000"
-      - "traefik.api1.frontend.rule=PathPrefix:/api"
+      - "traefik.http.routers.api1.entrypoints=http, traefik"
+      - "traefik.http.routers.api1.service=api1"
+      - "traefik.http.routers.api1.priority=2"
+      - "traefik.http.routers.api1.rule=PathPrefix(`/api`)||PathPrefix(`/socket.io`)"
+      - "traefik.http.services.api1.loadbalancer.server.port=3000"
+      - "traefik.http.routers.api2.entrypoints=http, traefik"
+      - "traefik.http.routers.api2.service=api2"
+      - "traefik.http.routers.api2.priority=3"
+      - "traefik.http.routers.api2.rule=PathPrefix(`/live`)"
+      - "traefik.http.services.api2.loadbalancer.server.port=8888"
+      - "traefik.tcp.routers.rtmp.entrypoints=rtmp"
+      - "traefik.tcp.routers.rtmp.service=rtmp"
+      - "traefik.tcp.routers.rtmp.rule=HostSNI(`*`)"
+      - "traefik.tcp.services.rtmp.loadbalancer.server.port=1935"
   web:
     image: node
     volumes:
@@ -34,13 +42,16 @@ services:
     working_dir: /usr/src/app
     command: npm run start-docker
     labels:
-      - "traefik.port=1234"
-      - "traefik.weight=1"
-      - "traefik.frontend.rule=PathPrefix:/"
+      - "traefik.http.routers.web.entrypoints=http, traefik"
+      - "traefik.http.routers.web.priority=1"
+      - "traefik.http.routers.web.rule=PathPrefix(`/`)"
+      - "traefik.http.services.web.loadbalancer.server.port=1234"
   traefik:
     image: traefik
     restart: unless-stopped
-    command: --api --docker
+    command: --api.insecure=true --providers.docker --entryPoints.rtmp.address=:1935 --entryPoints.http.address=:80
+    # command: --api.insecure=true --providers.docker
+    # command: --api --docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
@@ -48,3 +59,4 @@ services:
     ports:
       - 8000:80
       - 8001:8080
+      - 1935:1935

@@ -9,7 +9,13 @@ const handleResponse = (res, code, statusMsg) => {
     res.status(code).json(statusMsg);
 };
 
-exports.postSignupChecks = [
+const signupChecks = [
+    check('username')
+        .not()
+        .isEmpty()
+        .withMessage('Username cannot be blank')
+        .isLength(3)
+        .withMessage('Password must be at least 3 characters long'),
     check('email')
         .not()
         .isEmpty()
@@ -36,7 +42,7 @@ exports.postSignupChecks = [
         }),
 ];
 
-router.post('/', (req, res, next) => {
+router.post('/', signupChecks, (req, res, next) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -44,6 +50,7 @@ router.post('/', (req, res, next) => {
     }
 
     const user = new User();
+    user.username = req.body.username;
     user.email = req.body.email;
     user.password = user.generateHash(req.body.password);
     user.token = user.generateToken();
@@ -64,4 +71,4 @@ router.post('/', (req, res, next) => {
     });
 });
 
-module.exports = router;
+exports.router = router;

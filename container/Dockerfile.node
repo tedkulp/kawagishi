@@ -1,0 +1,12 @@
+FROM node
+
+RUN apt update && apt install -y wget
+
+RUN wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+RUN tar xvf ffmpeg-release-amd64-static.tar.xz
+RUN cp ffmpeg-4.2.1-amd64-static/ffmpeg /usr/bin/ffmpeg
+RUN cp ffmpeg-4.2.1-amd64-static/ffprobe /usr/bin/ffprobe
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+CMD [ "node" ]

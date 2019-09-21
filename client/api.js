@@ -5,7 +5,7 @@ import { store } from './store';
 
 const API_URL = '/api/v1';
 
-const _performRequest = (method, url, params, auth, config = {}) => {
+const _performRequest = (method, url, params = {}, auth = false, config = {}) => {
     const body = method === 'get' ? 'params' : 'data';
     const requestConfig = {
         ...config,
@@ -24,9 +24,9 @@ const _performRequest = (method, url, params, auth, config = {}) => {
     };
 
     if (auth) {
-        const token = get(store.getState(), 'Auth.currentUser.token');
+        const token = _.get(store.getState(), 'Auth.currentUser.token');
         if (token) {
-            requestConfig.headers['Authorization'] = token;
+            requestConfig.headers['Authorization'] = `Bearer ${token}`;
         }
     }
 

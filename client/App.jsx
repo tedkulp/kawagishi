@@ -4,6 +4,7 @@ import { Route, Switch } from 'react-router';
 import Container from '@material-ui/core/Container';
 import CssBaseline from '@material-ui/core/CssBaseline';
 
+import Channel from './components/Channel';
 import ChannelList from './components/ChannelList';
 import Login from './components/Login';
 import Logout from './components/Logout';
@@ -17,6 +18,7 @@ export default () => (
             <Switch>
                 <PrivateRoute path="/" exact component={ChannelList} />
                 <PrivateRoute path="/channels" component={ChannelList} />
+                <PrivateRoute path="/channel/:streamName" component={Channel} />
                 <Route path="/login" component={Login} />
                 <Route path="/logout" component={Logout} />
                 <Route path="/signup" component={Signup} />

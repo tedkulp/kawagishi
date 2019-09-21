@@ -6,6 +6,7 @@ import storage from 'redux-persist/lib/storage';
 import { createReduxHistoryContext } from 'redux-first-history';
 
 import { authModel as Auth } from './models/Auth.model';
+import { channelsModel as Channels } from './models/Channels.model';
 
 const { createReduxHistory, routerMiddleware, routerReducer } = createReduxHistoryContext({
     history: createBrowserHistory(),
@@ -16,6 +17,7 @@ const { createReduxHistory, routerMiddleware, routerReducer } = createReduxHisto
 export const store = easyCreateStore(
     {
         Auth,
+        Channels,
         router: reducer(routerReducer),
     },
     {

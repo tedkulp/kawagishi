@@ -1,7 +1,6 @@
 const passport = require('passport');
 const { Strategy: LocalStrategy } = require('passport-local');
-const { Strategy: BearerStrategy } = require('passport-http-bearer');
-const { omit } = require('lodash');
+const { Strategy: JWTStrategy, ExtractJwt } = require('passport-jwt');
 const User = require('../database').User;
 
 passport.serializeUser((user, cb) => {
@@ -19,7 +18,7 @@ passport.use(
             passwordField: 'password',
         },
         function(username, password, done) {
-            User.findOne({ email: username }, 'email password token', (err, user) => {
+            User.findOne({ email: username }, (err, user) => {
                 if (err) {
                     return done(err);
                 }
@@ -35,19 +34,30 @@ passport.use(
 );
 
 passport.use(
-    new BearerStrategy(function(token, done) {
-        User.findOne({ token: token }, (err, user) => {
-            if (err) {
-                return done(err);
-            }
+    new JWTStrategy(
+        {
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+            secretOrKey:
+                process.env.JWT_SECRET ||
+                'lksfkljuwlksjwelkjsdlkjsdlkjweoiseijlxlvkjsldkfjewoirwlkjsdfklj',
+        },
+        function(payload, done) {
+            User.findById(payload.id, (err, user) => {
+                if (err) {
+                    return done(err);
+                }
 
-            if (!user || !user.validPassword(password)) {
-                return done('Invalid token');
-            }
+                if (!user) {
+                    return done('Invalid token');
+                }
 
-            return done(null, user.toPassportReturn());
-        });
-    })
+                return done(null, user.toPassportReturn());
+            });
+        }
+    )
 );
 
-module.exports = passport;
+module.exports = {
+    passport,
+    jwtAuthenticate: () => passport.authenticate('jwt', { session: false }),
+};

@@ -6,20 +6,13 @@ const { randomBytes } = require('crypto');
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
+    username: String,
     email: String,
     password: String,
     token: String,
     stream_key: String,
+    channel_title: String,
 });
-
-const getMethods = obj => {
-    let properties = new Set();
-    let currentObj = obj;
-    do {
-        Object.getOwnPropertyNames(currentObj).map(item => properties.add(item));
-    } while ((currentObj = Object.getPrototypeOf(currentObj)));
-    return [...properties.keys()].filter(item => typeof obj[item] === 'function');
-};
 
 UserSchema.methods.generateHash = password => {
     return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
@@ -38,7 +31,7 @@ UserSchema.methods.generateStreamKey = () => {
 };
 
 UserSchema.methods.toPassportReturn = function() {
-    return pick(this, ['email', 'token']);
+    return pick(this, ['id', 'username', 'email']);
 };
 
 module.exports = UserSchema;

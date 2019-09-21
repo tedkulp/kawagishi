@@ -44,6 +44,7 @@ const useStyles = makeStyles(theme => ({
 
 const useSignupForm = (doSignup, setCurrentUser) => {
     const [inputs, setInputs] = useState({
+        username: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -99,11 +100,24 @@ export default function Signup() {
                         margin="normal"
                         required
                         fullWidth
+                        id="username"
+                        label="Username"
+                        name="username"
+                        autoComplete="username"
+                        autoFocus
+                        onChange={handleInputChange}
+                        value={inputs.username}
+                    />
+                    <TextField
+                        variant="outlined"
+                        margin="normal"
+                        required
+                        fullWidth
                         id="email"
                         label="Email Address"
                         name="email"
                         autoComplete="email"
-                        autoFocus
+                        // autoFocus
                         onChange={handleInputChange}
                         value={inputs.email}
                     />
