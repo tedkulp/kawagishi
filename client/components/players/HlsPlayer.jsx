@@ -2,7 +2,7 @@ import React from 'react';
 import videojs from 'video.js';
 import _ from 'videojs-flash';
 
-export default class Player2 extends React.Component {
+export default class HlsPlayer extends React.Component {
     componentDidMount() {
         this.player = videojs(this.videoNode, this.props, function onPlayerReady() {
             console.log('onPlayerReady', this);

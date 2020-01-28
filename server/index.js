@@ -2,10 +2,13 @@ const express = require('express');
 const app = express();
 
 const http = require('http').createServer(app);
-const io = require('socket.io')(http);
+const io = require('socket.io')(http, {
+    pingInterval: 500,
+    pingTimeout: 10000,
+});
 const port = 3000;
 
-const nms = require('./lib/media_server');
+const nms = require('./lib/media_server')(io);
 const login = require('./lib/routes/login');
 const signup = require('./lib/routes/signup');
 const streams = require('./lib/routes/streams');
@@ -25,6 +28,10 @@ app.use('/api/v1/streams', streams.router);
 io.on('connection', socket => {
     console.log('a user connected');
 
+    socket.on('disconnect', () => {
+        console.log('a user disconnected');
+    });
+
     socket.on('join channel', data => {
         console.log('join channel', data);
         socket.join(data.channel);
@@ -34,7 +41,14 @@ io.on('connection', socket => {
         console.log('leave channel', data);
         socket.leave(data.channel);
     });
+
+    socket.on('new message', data => {
+        console.log('new message', data);
+        io.to(data.channelName).emit('broadcast message', data);
+    });
 });
+
+io.on('disconnection', socket => {});
 
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 nms.run();

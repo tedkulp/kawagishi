@@ -155,10 +155,14 @@ export default props => {
         if (props.play) {
             flvPlayer.attachMediaElement(video);
             flvPlayer.load();
-            flvPlayer.play();
+            flvPlayer.play().catch(err => {
+                console.error('err', err);
+            });
         } else {
-            // flvPlayer.unload();
-            // flvPlayer.detachMediaElement();
+            if (flvPlayer) {
+                flvPlayer.unload();
+                flvPlayer.detachMediaElement();
+            }
         }
     }, [props.play]);
 

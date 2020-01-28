@@ -10,7 +10,7 @@ services:
     labels:
       - "traefik.enable=false"
   api:
-    image: tedkulp/node-ffmpeg
+    image: tedkulp/node-ffmpeg:latest
     volumes:
       - ".:/usr/src/app"
     ports:

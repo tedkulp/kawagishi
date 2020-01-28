@@ -1,4 +1,5 @@
 .cache
 db_data
 dist
+media
 node_modules

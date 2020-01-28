@@ -2,6 +2,7 @@ const passport = require('passport');
 const { Strategy: LocalStrategy } = require('passport-local');
 const { Strategy: JWTStrategy, ExtractJwt } = require('passport-jwt');
 const User = require('../database').User;
+const { token } = require('../auth/jwt');
 
 passport.serializeUser((user, cb) => {
     cb(null, user);
@@ -37,9 +38,7 @@ passport.use(
     new JWTStrategy(
         {
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            secretOrKey:
-                process.env.JWT_SECRET ||
-                'lksfkljuwlksjwelkjsdlkjsdlkjweoiseijlxlvkjsldkfjewoirwlkjsdfklj',
+            secretOrKey: token,
         },
         function(payload, done) {
             User.findById(payload.id, (err, user) => {

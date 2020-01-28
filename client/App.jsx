@@ -14,7 +14,7 @@ import Signup from './components/Signup';
 export default () => (
     <>
         <CssBaseline />
-        <Container component="main">
+        <Container component="main" maxWidth="xl">
             <Switch>
                 <PrivateRoute path="/" exact component={ChannelList} />
                 <PrivateRoute path="/channels" component={ChannelList} />
