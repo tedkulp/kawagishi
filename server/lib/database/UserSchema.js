@@ -34,4 +34,16 @@ UserSchema.methods.toPassportReturn = function() {
     return pick(this, ['id', 'username', 'email']);
 };
 
+UserSchema.methods.toMeReturn = function() {
+    return pick(this, ['id', 'username', 'email', 'stream_key']);
+};
+
+UserSchema.set('toJSON', {
+    virtuals: true,
+    versionKey: false,
+    transform: (_doc, ret) => {
+        delete ret._id;
+    },
+});
+
 module.exports = UserSchema;

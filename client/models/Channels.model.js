@@ -2,7 +2,6 @@ import { thunk, action } from 'easy-peasy';
 import { get } from 'lodash';
 
 import { authReq } from '../api';
-// import { store } from '../store';
 
 const getChannels = async params => {
     return authReq('get', '/streams', params)
@@ -56,7 +55,6 @@ export const channelsModel = {
         });
     }),
     getChannel: thunk(async (actions, payload) => {
-        console.log('payload', payload);
         return getChannel(payload.streamName, payload.params).then(channel => {
             actions.setCurrentChannel(channel);
         });

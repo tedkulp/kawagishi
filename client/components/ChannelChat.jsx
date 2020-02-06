@@ -2,44 +2,49 @@ import React, { useState, useEffect, createRef } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { get } from 'lodash';
 
-import Box from '@material-ui/core/Box';
-
 const CHANNEL_SCROLLBACK_LENGTH = 250;
-// let i = 0;
-let themeObj = null;
 
-const useStyles = makeStyles(theme => {
-    themeObj = theme;
-    return {
-        chatBox: {
-            backgroundColor: '#ddd',
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%',
-        },
-        messageBox: {
-            overflowY: 'auto',
-            display: 'flex',
-            flex: '1',
-            flexDirection: 'column',
-            padding: '5px',
-        },
-        messageRow: {
-            width: '100%',
-        },
-        messageInput: {
-            width: '100%',
-            padding: 0,
-            margin: 0,
-        },
-    };
-});
+const useStyles = makeStyles(theme => ({
+    chatBox: {
+        backgroundColor: '#ddd',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        width: '250px',
+        borderLeft: '1px #000 solid',
+    },
+    messageBox: {
+        flexGrow: 1,
+        padding: '5px',
+        position: 'relative',
+        backgroundColor: '#070707',
+        color: '#fff',
+    },
+    messagesWrapper: {
+        overflowY: 'auto',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+    },
+    messageRow: {
+        width: '100%',
+        paddingLeft: '5px',
+        paddingRight: '5px',
+    },
+    messageInput: {
+        width: '100%',
+        padding: 0,
+        margin: 0,
+        backgroundColor: '#000',
+        color: '#fff',
+    },
+}));
 
 export default props => {
     const classes = useStyles();
-    const { socket, currentUser, currentChannel } = props;
-
-    // console.log('props', socket, currentUser, currentChannel);
+    const { socket, currentUser, currentChannel, showChat = false } = props;
 
     const [messages, setMessages] = useState([]);
     const [previousMessage, setPreviousMessage] = useState('');
@@ -118,24 +123,25 @@ export default props => {
     };
 
     return (
-        // <Box height={props.height - themeObj.spacing(0.5)} className={classes.chatBox}>
-        <Box className={classes.chatBox}>
-            <div className={classes.messageBox} ref={box}>
-                {(messages || []).map(msg => (
-                    <div key={msg.id} className={classes.messageRow}>
-                        {msg.username}: {msg.message}
-                    </div>
-                ))}
+        <div className={classes.chatBox} style={{ display: showChat ? 'flex' : 'none' }}>
+            <div className={classes.messageBox}>
+                <div className={classes.messagesWrapper} ref={box}>
+                    {(messages || []).map(msg => (
+                        <div key={msg.id} className={classes.messageRow}>
+                            {msg.username}: {msg.message}
+                        </div>
+                    ))}
+                </div>
             </div>
-            <div>
-                <textarea
-                    rows="2"
-                    className={classes.messageInput}
-                    value={chatMessage}
-                    onChange={chatMessageOnChange}
-                    onKeyDown={chatMessageSendMessage}
-                />
-            </div>
-        </Box>
+
+            <textarea
+                rows="2"
+                className={classes.messageInput}
+                value={chatMessage}
+                onChange={chatMessageOnChange}
+                onKeyDown={chatMessageSendMessage}
+                placeholder={`Type to chat...`}
+            />
+        </div>
     );
 };

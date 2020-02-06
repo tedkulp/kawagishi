@@ -22,7 +22,7 @@ services:
       - "traefik.http.routers.api1.entrypoints=http, traefik"
       - "traefik.http.routers.api1.service=api1"
       - "traefik.http.routers.api1.priority=2"
-      - "traefik.http.routers.api1.rule=PathPrefix(`/api`)||PathPrefix(`/socket.io`)"
+      - "traefik.http.routers.api1.rule=PathPrefix(`/api`)||PathPrefix(`/socket.io`)||PathPrefix(`/thumbnails`)"
       - "traefik.http.services.api1.loadbalancer.server.port=3000"
       - "traefik.http.routers.api2.entrypoints=http, traefik"
       - "traefik.http.routers.api2.service=api2"

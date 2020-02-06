@@ -1,27 +1,59 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import videojs from 'video.js';
-import _ from 'videojs-flash';
+import 'videojs-flvjs-es6';
 
-export default class HlsPlayer extends React.Component {
-    componentDidMount() {
-        this.player = videojs(this.videoNode, this.props, function onPlayerReady() {
-            console.log('onPlayerReady', this);
-        });
-    }
+export default props => {
+    const [player, setPlayer] = useState();
+    const videoNode = useRef();
 
-    componentWillUnmount() {
-        if (this.player) {
-            this.player.dispose();
+    useEffect(() => {
+        // if (player) {
+        if (props.isLive) {
+            let currentPlayer = player;
+            console.log('--> #1', player);
+            if (!currentPlayer || currentPlayer.isDisposed()) {
+                console.log('creating player');
+                currentPlayer = videojs(videoNode.current, props);
+                setPlayer(currentPlayer);
+            }
+
+            console.log('currentPlayer', currentPlayer);
+            setTimeout(() => {
+                currentPlayer.play();
+            });
+        } else {
+            // if (!player.paused()) {
+            console.log('--> #2', player);
+            if (player && !player.isDisposed()) {
+                player.dispose();
+            }
+            // }
         }
-    }
+        // }
+    }, [player, props]);
 
-    render() {
-        return (
-            <div>
-                <div data-vjs-player>
-                    <video ref={node => (this.videoNode = node)} className="video-js" />
-                </div>
+    useEffect(() => {
+        if (props.isLive) {
+            const currentPlayer = videojs(videoNode.current, props);
+            setPlayer(currentPlayer);
+        }
+
+        return () => {
+            if (player && !player.isDisposed()) {
+                player.dispose();
+            }
+        };
+    }, [videoNode]);
+
+    return (
+        <div style={{ height: '100%' }}>
+            <div data-vjs-player style={{ height: '100%' }}>
+                <video
+                    ref={videoNode}
+                    className="video-js"
+                    style={{ width: '100%', height: '100%' }}
+                />
             </div>
-        );
-    }
-}
+        </div>
+    );
+};

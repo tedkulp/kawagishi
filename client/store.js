@@ -7,6 +7,7 @@ import { createReduxHistoryContext } from 'redux-first-history';
 
 import { authModel as Auth } from './models/Auth.model';
 import { channelsModel as Channels } from './models/Channels.model';
+import { userModel as User } from './models/User.model';
 
 const { createReduxHistory, routerMiddleware, routerReducer } = createReduxHistoryContext({
     history: createBrowserHistory(),
@@ -14,14 +15,20 @@ const { createReduxHistory, routerMiddleware, routerReducer } = createReduxHisto
     //others options if needed
 });
 
+const middleware = [
+    routerMiddleware,
+    //logger,
+];
+
 export const store = easyCreateStore(
     {
         Auth,
         Channels,
+        User,
         router: reducer(routerReducer),
     },
     {
-        middleware: [routerMiddleware, logger],
+        middleware,
         reducerEnhancer: reducer =>
             persistReducer(
                 {

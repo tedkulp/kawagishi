@@ -3,3 +3,6 @@ db_data
 dist
 media
 node_modules
+tmp
+.DS_Store
+thumbnails

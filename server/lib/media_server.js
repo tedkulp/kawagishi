@@ -4,6 +4,8 @@ const { get } = require('lodash');
 const jwt = require('jsonwebtoken');
 const { User } = require('./database');
 const { token } = require('./auth/jwt');
+const config = require('./config/default');
+const { generateStreamThumbnail } = require('./util/thumbnails');
 
 const getUsernameFromStreamPath = path => {
     const parts = path.split('/');
@@ -11,35 +13,7 @@ const getUsernameFromStreamPath = path => {
 };
 
 const nmsExport = io => {
-    const nms = new NodeMediaServer({
-        logType: 3,
-        rtmp: {
-            port: 1935,
-            chunk_size: 60000,
-            gop_cache: true,
-            ping: 30,
-            ping_timeout: 60,
-        },
-        http: {
-            port: 8888,
-            allow_origin: '*',
-            mediaroot: './media',
-        },
-        trans: {
-            ffmpeg: '/usr/bin/ffmpeg',
-            tasks: [
-                {
-                    app: 'live',
-                    hls: true,
-                    hlsFlags: '[hls_time=2:hls_list_size=3:hls_flags=delete_segments]',
-                    dash: true,
-                    dashFlags: '[f=dash:window_size=3:extra_window_size=5]',
-                    mp4: true,
-                    mp4Flags: '[movflags=faststart]',
-                },
-            ],
-        },
-    });
+    const nms = new NodeMediaServer(config.rtmp_server);
 
     nms.on('prePublish', (id, streamPath, args) => {
         const username = getUsernameFromStreamPath(streamPath);
@@ -57,6 +31,8 @@ const nmsExport = io => {
                 if (!user) {
                     let session = nms.getSession(id);
                     session.reject();
+                } else {
+                    generateStreamThumbnail(username, get(args, 'key', ''));
                 }
             }
         });
@@ -107,6 +83,20 @@ const nmsExport = io => {
                 }
             });
         }
+    });
+
+    nms.on('preRecord', (StreamPath, files) => {
+        console.log(
+            `[NodeEvent on preRecord]`,
+            `StreamPath=${StreamPath} files=${JSON.stringify(files)}`
+        );
+    });
+
+    nms.on('doneRecord', (StreamPath, files) => {
+        console.log(
+            `[NodeEvent on doneRecord]`,
+            `StreamPath=${StreamPath} files=${JSON.stringify(files)}`
+        );
     });
 
     return nms;

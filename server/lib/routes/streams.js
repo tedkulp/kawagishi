@@ -99,7 +99,7 @@ router.get('/', jwtAuthenticate(), async (_req, res, _next) => {
     // See: https://zellwk.com/blog/async-await-in-loops/
     stats = await Object.keys(stats).reduce(async (acc, key) => {
         const val = stats[key];
-        const user = await User.findOne({ username: key }, ['username', 'email']);
+        const user = await User.findOne({ username: key }, ['username', 'email', 'channel_title']);
         val['publisher']['user'] = user;
 
         const updatedAcc = await acc;

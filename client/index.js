@@ -7,6 +7,8 @@ import { StoreProvider } from 'easy-peasy';
 import App from './App';
 import { store, persistor, history } from './store';
 
+import './style.scss';
+
 const onRedirectCallback = appState => {
     window.history.replaceState(
         {},

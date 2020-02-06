@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const path = require('path');
 
 const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
@@ -12,6 +13,8 @@ const nms = require('./lib/media_server')(io);
 const login = require('./lib/routes/login');
 const signup = require('./lib/routes/signup');
 const streams = require('./lib/routes/streams');
+const users = require('./lib/routes/users');
+const { cronJob } = require('./lib/util/thumbnails');
 
 // Add on the top next to imports
 const { passport } = require('./lib/auth/passport');
@@ -24,6 +27,9 @@ app.use(passport.session());
 app.use('/api/v1/login', login.router);
 app.use('/api/v1/signup', signup.router);
 app.use('/api/v1/streams', streams.router);
+app.use('/api/v1/users', users.router);
+
+app.use('/thumbnails', express.static(path.join(__dirname, '..', 'thumbnails')));
 
 io.on('connection', socket => {
     console.log('a user connected');
@@ -52,3 +58,5 @@ io.on('disconnection', socket => {});
 
 http.listen(port, () => console.log(`Example app listening on port ${port}!`));
 nms.run();
+
+cronJob.start();
