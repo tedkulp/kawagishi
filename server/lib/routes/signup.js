@@ -15,7 +15,7 @@ const signupChecks = [
         .isEmpty()
         .withMessage('Username cannot be blank')
         .isLength(3)
-        .withMessage('Password must be at least 3 characters long'),
+        .withMessage('Username must be at least 3 characters long'),
     check('email')
         .not()
         .isEmpty()
@@ -57,7 +57,7 @@ router.post('/', signupChecks, (req, res, next) => {
     user.stream_key = user.generateStreamKey();
     user.save(err => {
         if (err) {
-            return done(err);
+            return handleResponse(res, 400, { error: err });
         }
 
         return passport.authenticate('local', (err, user, _info) => {

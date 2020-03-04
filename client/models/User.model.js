@@ -33,14 +33,43 @@ const resetStreamingKey = () => {
         });
 };
 
+const inviteUser = payload => {
+    return authReq('post', '/users/invite_user', payload)
+        .then(response => {
+            if (response.status > 399) {
+                return Promise.reject(response.data);
+            } else {
+                return response.data;
+            }
+        })
+        .catch(error => {
+            const erroMessage = get(error, 'response.data.errors');
+            return Promise.reject(erroMessage);
+        });
+};
+
 export const userModel = {
     currentUser: undefined,
+    error: undefined,
+    msg: undefined,
 
     setCurrentUser: action((state, payload) => {
         state.currentUser = payload;
     }),
     clearCurrentUser: action((state, _payload) => {
         state.currentUser = undefined;
+    }),
+    setError: action((state, payload) => {
+        state.error = payload;
+    }),
+    clearError: action((state, _payload) => {
+        state.error = undefined;
+    }),
+    setMsg: action((state, payload) => {
+        state.msg = payload;
+    }),
+    clearMsg: action((state, _payload) => {
+        state.msg = undefined;
     }),
 
     getMe: thunk(async (actions, _payload) => {
@@ -60,6 +89,20 @@ export const userModel = {
             })
             .catch(err => {
                 throw err;
+            });
+    }),
+
+    inviteUser: thunk(async (actions, payload) => {
+        actions.clearError();
+        actions.clearMsg();
+
+        return inviteUser(payload)
+            .then(ret => {
+                actions.setMsg('Invite Sent!');
+                return ret;
+            })
+            .catch(err => {
+                actions.setError(err);
             });
     }),
 };

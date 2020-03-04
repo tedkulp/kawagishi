@@ -46,7 +46,7 @@
     "moment": "^2.24.0",
     "moment-duration-format": "^2.3.2",
     "mongoose": "^5.8.9",
-    "node-media-server": "^2.1.4",
+    "node-media-server": "tedkulp/node-media-server",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",

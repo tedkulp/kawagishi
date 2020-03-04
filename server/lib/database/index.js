@@ -16,4 +16,5 @@ const connectWithRetry = function() {
 
 connectWithRetry();
 
+exports.Invite = mongoose.model('Invite', require('./InviteSchema'));
 exports.User = mongoose.model('User', require('./UserSchema'));
