@@ -9,6 +9,21 @@ services:
       - "./db_data:/data/db"
     labels:
       - "traefik.enable=false"
+  proxy:
+    image: node:latest
+    volumes:
+      - ".:/usr/src/app"
+    working_dir: /usr/src/app
+    command: npm run proxy-watch
+    environment:
+      LOG_LEVEL: "${LOG_LEVEL:-debug}"
+      JWT_SECRET: "${JWT_SECRET:-lksfkljuwlksjwelkjsdlkjsdlkjweoiseijlxlvkjsldkfjewoirwlkjsdfklj}"
+    labels:
+      - "traefik.http.routers.proxy.entrypoints=http, traefik"
+      - "traefik.http.routers.proxy.service=proxy"
+      - "traefik.http.routers.proxy.priority=2"
+      - "traefik.http.routers.proxy.rule=PathPrefix(`/live`)"
+      - "traefik.http.services.proxy.loadbalancer.server.port=3002"
   api:
     image: tedkulp/node-ffmpeg:latest
     volumes:
@@ -16,24 +31,17 @@ services:
       - "../Node-Media-Server:/usr/src/app/node_modules/node-media-server"
     ports:
       - 8888:8888
-      # - 1935:1935
     working_dir: /usr/src/app
     command: npm run server-watch
+    environment:
+      LOG_LEVEL: "${LOG_LEVEL:-debug}"
+      JWT_SECRET: "${JWT_SECRET:-lksfkljuwlksjwelkjsdlkjsdlkjweoiseijlxlvkjsldkfjewoirwlkjsdfklj}"
     labels:
       - "traefik.http.routers.api1.entrypoints=http, traefik"
       - "traefik.http.routers.api1.service=api1"
       - "traefik.http.routers.api1.priority=2"
       - "traefik.http.routers.api1.rule=PathPrefix(`/api`)||PathPrefix(`/socket.io`)||PathPrefix(`/thumbnails`)"
       - "traefik.http.services.api1.loadbalancer.server.port=3000"
-      - "traefik.http.routers.api2.entrypoints=http, traefik"
-      - "traefik.http.routers.api2.service=api2"
-      - "traefik.http.routers.api2.priority=3"
-      - "traefik.http.routers.api2.rule=PathPrefix(`/live`)"
-      - "traefik.http.services.api2.loadbalancer.server.port=8888"
-      - "traefik.tcp.routers.rtmp.entrypoints=rtmp"
-      - "traefik.tcp.routers.rtmp.service=rtmp"
-      - "traefik.tcp.routers.rtmp.rule=HostSNI(`*`)"
-      - "traefik.tcp.services.rtmp.loadbalancer.server.port=1935"
   web:
     image: node
     volumes:
@@ -48,12 +56,28 @@ services:
       - "traefik.http.routers.web.priority=1"
       - "traefik.http.routers.web.rule=PathPrefix(`/`)"
       - "traefik.http.services.web.loadbalancer.server.port=1234"
+  srs:
+    image: ossrs/srs:3
+    restart: unless-stopped
+    volumes:
+      - "./srs.conf:/usr/local/srs/conf/srs.conf"
+      - "./video:/usr/local/srs/objs/nginx/html/video"
+    ports:
+      - "1985:1985"
+    labels:
+      # - "traefik.http.routers.srs.entrypoints=http, traefik"
+      # - "traefik.http.routers.srs.service=srs"
+      # - "traefik.http.routers.srs.priority=3"
+      # - "traefik.http.routers.srs.rule=PathPrefix(`/live`)"
+      # - "traefik.http.services.srs.loadbalancer.server.port=8080"
+      - "traefik.tcp.routers.rtmp.entrypoints=rtmp"
+      - "traefik.tcp.routers.rtmp.service=rtmp"
+      - "traefik.tcp.routers.rtmp.rule=HostSNI(`*`)"
+      - "traefik.tcp.services.rtmp.loadbalancer.server.port=1935"
   traefik:
     image: traefik
     restart: unless-stopped
     command: --api.insecure=true --providers.docker --entryPoints.rtmp.address=:1935 --entryPoints.http.address=:80
-    # command: --api.insecure=true --providers.docker
-    # command: --api --docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:

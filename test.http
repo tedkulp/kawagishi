@@ -1,0 +1,11 @@
+http://localhost:8000/api/v1/streams
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkODM3MjQ1OTM0ODI4MDAyZGEwNGY0MCIsInVzZXJuYW1lIjoidGVkIiwiZW1haWwiOiJ0ZWRAdGVka3VscC5jb20iLCJpYXQiOjE1ODM0MTE1MjZ9.URxS7ov-9RpE_Q_UXo4wDQaHEJyx5lUbnK7cYqVtmuw
+
+###
+
+http://localhost:8000/api/v1/streams/ted
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkODM3MjQ1OTM0ODI4MDAyZGEwNGY0MCIsInVzZXJuYW1lIjoidGVkIiwiZW1haWwiOiJ0ZWRAdGVka3VscC5jb20iLCJpYXQiOjE1ODM0MTE1MjZ9.URxS7ov-9RpE_Q_UXo4wDQaHEJyx5lUbnK7cYqVtmuw
+
+###

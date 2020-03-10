@@ -129,9 +129,8 @@ export default props => {
 
     const resizerDetails = useResizeObserver({ ref: playerWrapper });
 
-    const wsUrlPrefix = [window.location.protocol, window.location.host]
-        .join('//')
-        .replace('http', 'ws');
+    const httpUrlPrefix = [window.location.protocol, window.location.host].join('//');
+    const wsUrlPrefix = httpUrlPrefix.replace('http', 'ws');
 
     const videoJsOptions = {
         autoplay: false,
@@ -192,19 +191,20 @@ export default props => {
                             )}
                         </div>
                         <FlvPlayer
-                            url={`${wsUrlPrefix}/live/${streamName}.flv?token=${currentUser.token}`}
+                            // url={`${httpUrlPrefix}/live/${streamName}.flv`}
+                            url={`${wsUrlPrefix}/live/${streamName}.flv`}
                             type="flv"
                             play={!!currentChannel.isLive}
                             isLive={true}
                             enableStashBuffer={false}
                             isMuted={false}
-                            // config={{
-                            //     enableStashBuffer: false,
-                            //     isLive: true,
-                            //     headers: {
-                            //         Authorization: `Bearer ${currentUser.token}`,
-                            //     },
-                            // }}
+                            config={{
+                                enableStashBuffer: false,
+                                isLive: true,
+                                headers: {
+                                    authorization: `Bearer ${currentUser.token}`,
+                                },
+                            }}
                             className={classes.player}
                         />
                         {/* <HlsPlayer

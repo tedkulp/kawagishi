@@ -80,43 +80,37 @@ export default () => {
                     </h3>
                 )}
                 {!isEmpty(channels) &&
-                    Object.values(channels).map(channel => (
-                        <div
-                            key={`channel-${channel.publisher.stream}`}
-                            className={classes.channelEntry}
-                        >
+                    channels.map(channel => (
+                        <div key={`channel-${channel.stream}`} className={classes.channelEntry}>
                             <div className={classes.channelWrapper}>
                                 <span className={classes.liveLabel}>LIVE</span>
                                 <span className={classes.liveTime}>
-                                    {calcDuration(channel.publisher.duration)}
+                                    {calcDuration(channel.duration)}
                                 </span>
-                                <MuiLink
-                                    component={Link}
-                                    to={`/channel/${channel.publisher.stream}`}
-                                >
+                                <MuiLink component={Link} to={`/channel/${channel.stream}`}>
                                     <img
                                         className={classes.channelThumb}
-                                        src={`/thumbnails/${channel.publisher.stream}.png`}
+                                        src={`/thumbnails/${channel.stream}.png`}
                                     />
                                 </MuiLink>
                                 <MuiLink
-                                    href={`/channel/${channel.publisher.stream}`}
+                                    href={`/channel/${channel.stream}`}
                                     style={{ display: 'block' }}
                                     underline="none"
                                     color="textPrimary"
                                 >
                                     <Typography color="primary" variant="subtitle1" color="inherit">
-                                        {get(channel, 'publisher.user.channel_title')}
+                                        {get(channel, 'user.channel_title')}
                                     </Typography>
                                 </MuiLink>
                                 <MuiLink
-                                    href={`/channel/${channel.publisher.stream}`}
+                                    href={`/channel/${channel.stream}`}
                                     style={{ display: 'block' }}
                                     underline="none"
                                     color="textPrimary"
                                 >
                                     <Typography color="primary" variant="subtitle2" color="inherit">
-                                        {channel.publisher.stream}
+                                        {channel.stream}
                                     </Typography>
                                 </MuiLink>
                             </div>

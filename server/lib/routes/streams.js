@@ -1,131 +1,101 @@
 const express = require('express');
-const context = require('node-media-server/node_core_ctx');
-const _ = require('lodash');
+const request = require('request-promise');
+const get = require('lodash/get');
+
+// const context = require('node-media-server/node_core_ctx');
+// const _ = require('lodash');
 const { jwtAuthenticate } = require('../auth/passport');
 
 const { User } = require('../database');
 const router = express.Router();
 
 router.get('/', jwtAuthenticate(), async (_req, res, _next) => {
-    let stats = {};
-
-    context.sessions.forEach(function(session, _id) {
-        if (session.isStarting) {
-            let regRes = /\/(.*)\/(.*)/gi.exec(session.publishStreamPath || session.playStreamPath);
-
-            if (regRes === null) return;
-
-            let [app, stream] = _.slice(regRes, 1);
-
-            if (!_.get(stats, [stream])) {
-                _.set(stats, [stream], {
-                    publisher: null,
-                    subscribers: [],
-                });
-            }
-
-            switch (true) {
-                case session.isPublishing: {
-                    _.set(stats, [stream, 'publisher'], {
-                        app: app,
-                        stream: stream,
-                        clientId: session.id,
-                        startTime: session.connectTime,
-                        duration: Math.ceil((Date.now() - session.startTimestamp) / 1000),
-                        bytes: session.socket.bytesRead,
-                        ip: session.socket.remoteAddress,
-                        user: {},
-                        audio:
-                            session.audioCodec > 0
-                                ? {
-                                      codec: session.audioCodecName,
-                                      profile: session.audioProfileName,
-                                      samplerate: session.audioSamplerate,
-                                      channels: session.audioChannels,
-                                  }
-                                : null,
-                        video:
-                            session.videoCodec > 0
-                                ? {
-                                      codec: session.videoCodecName,
-                                      width: session.videoWidth,
-                                      height: session.videoHeight,
-                                      profile: session.videoProfileName,
-                                      level: session.videoLevel,
-                                      fps: session.videoFps,
-                                  }
-                                : null,
-                    });
-
-                    break;
-                }
-                case !!session.playStreamPath: {
-                    switch (session.constructor.name) {
-                        case 'NodeRtmpSession': {
-                            stats[stream]['subscribers'].push({
-                                app: app,
-                                stream: stream,
-                                clientId: session.id,
-                                connectCreated: session.connectTime,
-                                bytes: session.socket.bytesWritten,
-                                ip: session.socket.remoteAddress,
-                                protocol: 'rtmp',
-                            });
-
-                            break;
-                        }
-                        case 'NodeFlvSession': {
-                            stats[stream]['subscribers'].push({
-                                app: app,
-                                stream: stream,
-                                clientId: session.id,
-                                connectCreated: session.connectTime,
-                                bytes: session.req.connection.bytesWritten,
-                                ip: session.req.connection.remoteAddress,
-                                protocol: session.TAG === 'websocket-flv' ? 'ws' : 'http',
-                            });
-
-                            break;
-                        }
-                    }
-
-                    break;
-                }
-            }
-        }
+    const streams = await request({
+        uri: 'http://srs:1985/api/v1/streams',
+        json: true,
+    }).then(resp => {
+        return get(resp, 'streams');
     });
+
+    let stats = await Promise.all(
+        streams.map(async singleStream => {
+            const cid = get(singleStream, 'publish.cid');
+            const clientDetails = await request({
+                uri: `http://srs:1985/api/v1/clients/${cid}`,
+                json: true,
+            }).then(resp => {
+                return get(resp, 'client');
+            });
+
+            const liveTimeS = Math.ceil(get(clientDetails, 'alive', 0));
+
+            return {
+                app: singleStream.app,
+                stream: singleStream.name,
+                clientId: singleStream.id,
+                startTime: Math.ceil(Date.now() / 1000) - liveTimeS,
+                duration: liveTimeS,
+                bytes: singleStream.recv_bytes,
+                user: {},
+                viewers: get(singleStream, 'clients', 1) - 1,
+                audio: {
+                    codec: get(singleStream, 'audio.codec'),
+                    sampleRate: get(singleStream, 'audio.sample_rate', 0),
+                    channels: get(singleStream, 'audio.channel', 0),
+                    profile: get(singleStream, 'audio.profile'),
+                },
+                video: {
+                    codec: get(singleStream, 'video.codec'),
+                    profile: get(singleStream, 'video.profile'),
+                    level: get(singleStream, 'video.level'),
+                    width: get(singleStream, 'video.width', 0),
+                    height: get(singleStream, 'video.height', 0),
+                },
+            };
+        })
+    );
 
     // Set all the users for all the publishers in a fancy async way
     // See: https://zellwk.com/blog/async-await-in-loops/
-    stats = await Object.keys(stats).reduce(async (acc, key) => {
-        const val = stats[key];
-        const user = await User.findOne({ username: key }, ['username', 'email', 'channel_title']);
-        val['publisher']['user'] = user;
+    stats = await stats.reduce(async (acc, stream) => {
+        const username = stream.stream;
+        const user = await User.findOne({ username }, ['username', 'email', 'channel_title']);
+        stream['user'] = user;
 
-        const updatedAcc = await acc;
-        updatedAcc[key] = val;
+        let updatedAcc = await acc;
+        updatedAcc = [...updatedAcc, stream];
         return updatedAcc;
-    }, {});
+    }, []);
 
     res.json(stats);
 });
 
 router.get('/:username', jwtAuthenticate(), async (req, res, next) => {
-    const user = await User.findOne({ username: req.params.username }, [
-        'username',
-        'email',
-        'channel_title',
+    const [user, stream] = await Promise.all([
+        User.findOne({ username: req.params.username }, ['username', 'email', 'channel_title']),
+        request({
+            uri: 'http://srs:1985/api/v1/streams',
+            json: true,
+        })
+            .then(resp => {
+                return get(resp, 'streams');
+            })
+            .then(streams => {
+                return streams.find(s => s.name === req.params.username);
+            }),
     ]);
 
+    const isLive = stream && get(stream, 'publish.active');
+
     let streamStats = {
-        isLive: false,
-        viewers: 0,
+        isLive: !!isLive,
+        viewers: isLive ? get(stream, 'viewers', 1) - 1 : 0,
         duration: 0,
-        bitrate: 0,
         startTime: null,
         user: user || {},
     };
 
+    /*
     let publishStreamPath = `/live/${req.params.username}`;
 
     let publisherSession = context.sessions.get(context.publishers.get(publishStreamPath));
@@ -146,6 +116,7 @@ router.get('/:username', jwtAuthenticate(), async (req, res, next) => {
               )
             : 0;
     streamStats.startTime = streamStats.isLive ? publisherSession.connectTime : null;
+    */
 
     res.json(streamStats);
 });

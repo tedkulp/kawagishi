@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import AppBar from '@material-ui/core/AppBar';
-import CameraIcon from '@material-ui/icons/PhotoCamera';
+// import CameraIcon from '@material-ui/icons/PhotoCamera';
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -40,10 +40,10 @@ export default () => {
     return (
         <AppBar position="relative">
             <Toolbar>
-                <CameraIcon className={classes.icon} />
+                {/* <CameraIcon className={classes.icon} /> */}
                 <Typography variant="h6" color="inherit" noWrap>
                     <MuiLink component={Link} color="inherit" to="/">
-                        Streaming Site
+                        川岸 - Kawagishi
                     </MuiLink>
                 </Typography>
                 <div className={classes.grow} />

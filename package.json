@@ -6,7 +6,8 @@
   "scripts": {
     "start": "parcel index.html",
     "start-docker": "parcel serve --hmr-port=1235 index.html",
-    "server-watch": "nodemon --watch server server/index.js",
+    "server-watch": "nodemon --watch server server/index.js | ./node_modules/.bin/pino-pretty",
+    "proxy-watch": "nodemon --watch proxy proxy/index.js | ./node_modules/.bin/pino-pretty",
     "build": "NODE_ENV=development parcel build index.html --no-minify"
   },
   "author": "",
@@ -27,6 +28,7 @@
     "eslint-plugin-react-hooks": "^2.3.0",
     "nodemon": "^1.19.4",
     "parcel": "^1.12.4",
+    "pino-pretty": "^3.6.1",
     "prettier": "^1.19.1",
     "sass": "^1.25.0"
   },
@@ -38,9 +40,11 @@
     "cron": "^1.8.2",
     "easy-peasy": "^3.3.0",
     "express": "^4.17.1",
+    "express-pino-logger": "^4.0.0",
     "express-validator": "^6.3.1",
     "flv.js": "^1.5.0",
     "formik": "^1.5.8",
+    "http-proxy": "^1.18.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
@@ -50,6 +54,7 @@
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
+    "pino": "^5.17.0",
     "react": "^16.12.0",
     "react-container-dimensions": "^1.4.1",
     "react-dom": "^16.12.0",
@@ -59,12 +64,14 @@
     "redux-logger": "^3.0.6",
     "redux-persist": "^6.0.0",
     "request": "^2.88.0",
+    "request-promise": "^4.2.5",
     "shortid": "^2.2.15",
     "socket.io": "^2.3.0",
     "use-resize-observer": "^6.0.0",
     "use-timeout": "^1.1.0",
     "video.js": "^7.7.4",
     "videojs-flvjs-es6": "^1.0.0",
+    "ws": "^7.2.2",
     "yup": "^0.27.0"
   }
 }
