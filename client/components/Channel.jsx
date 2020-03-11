@@ -192,7 +192,7 @@ export default props => {
                         </div>
                         <FlvPlayer
                             // url={`${httpUrlPrefix}/live/${streamName}.flv`}
-                            url={`${wsUrlPrefix}/live/${streamName}.flv`}
+                            url={`${wsUrlPrefix}/live/${streamName}.flv?token=${currentUser.token}`}
                             type="flv"
                             play={!!currentChannel.isLive}
                             isLive={true}

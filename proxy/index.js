@@ -11,34 +11,45 @@ const wss = new WebSocket.Server({ noServer: true });
 const token =
     process.env.JWT_SECRET || 'lksfkljuwlksjwelkjsdlkjsdlkjweoiseijlxlvkjsldkfjewoirwlkjsdfklj';
 
-const doVerify = (req, res, sendRawTcp, cb) => {
-    console.log('req', req.headers);
-    return jwt.verify(
-        get(req, 'headers.authorization', '').replace('Bearer ', ''),
-        token,
-        (err, decoded) => {
-            if (err) {
-                if (sendRawTcp) {
-                    res.write(
-                        'HTTP/1.1 401 Web Socket Protocol Handshake\r\n' +
-                            'Upgrade: WebSocket\r\n' +
-                            'Connection: Upgrade\r\n' +
-                            '\r\n'
-                    );
-                    res.end();
-                    res.destroy();
-                    return;
-                } else {
-                    res.writeHead(401, {
-                        'Content-Type': 'text/plain',
-                    });
-                    res.end('Unauthorized');
-                }
-            } else {
-                cb(decoded);
-            }
+const getSentToken = req => {
+    let token = get(req, 'headers.authorization', '').replace('Bearer ', '');
+    if (!token) {
+        let sentUrl = req.url;
+        if (sentUrl.startsWith('/')) {
+            sentUrl = 'http://test.com' + sentUrl;
         }
-    );
+
+        const urlParts = new URL(sentUrl);
+        if (urlParts.searchParams.has('token')) {
+            token = urlParts.searchParams.get('token');
+        }
+    }
+    return token;
+};
+
+const doVerify = (req, res, sendRawTcp, cb) => {
+    return jwt.verify(getSentToken(req), token, (err, decoded) => {
+        if (err) {
+            if (sendRawTcp) {
+                res.write(
+                    'HTTP/1.1 401 Web Socket Protocol Handshake\r\n' +
+                        'Upgrade: WebSocket\r\n' +
+                        'Connection: Upgrade\r\n' +
+                        '\r\n'
+                );
+                res.end();
+                res.destroy();
+                return;
+            } else {
+                res.writeHead(401, {
+                    'Content-Type': 'text/plain',
+                });
+                res.end('Unauthorized');
+            }
+        } else {
+            cb(decoded);
+        }
+    });
 };
 
 const server = http.createServer((req, res) => {
