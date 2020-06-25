@@ -1,3 +1,3 @@
 ## Kawagishi
 
-Streaming server thing
+Streaming server thing.  Uses react, node, SRS and mongodb.
