@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION="4.2.2"
+VERSION="4.3.2"
 
 docker build --build-arg "version=${VERSION}" -f Dockerfile.node -t tedkulp/node-ffmpeg:latest -t tedkulp/node-ffmpeg:${VERSION} .
 

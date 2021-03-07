@@ -13,11 +13,14 @@ services:
     image: node:latest
     volumes:
       - ".:/usr/src/app"
+      - "./tmp-node-modules:/usr/src/app/node_modules"
     working_dir: /usr/src/app
     command: npm run proxy-watch
     environment:
       LOG_LEVEL: "${LOG_LEVEL:-debug}"
       JWT_SECRET: "${JWT_SECRET:-lksfkljuwlksjwelkjsdlkjsdlkjweoiseijlxlvkjsldkfjewoirwlkjsdfklj}"
+    depends_on: 
+      - web
     labels:
       - "traefik.http.routers.proxy.entrypoints=http, traefik"
       - "traefik.http.routers.proxy.service=proxy"
@@ -28,7 +31,8 @@ services:
     image: tedkulp/node-ffmpeg:latest
     volumes:
       - ".:/usr/src/app"
-      - "../Node-Media-Server:/usr/src/app/node_modules/node-media-server"
+      - "./tmp-node-modules:/usr/src/app/node_modules"
+      # - "../Node-Media-Server:/usr/src/app/node_modules/node-media-server"
     ports:
       - 8888:8888
     working_dir: /usr/src/app
@@ -46,11 +50,14 @@ services:
     image: node
     volumes:
       - ".:/usr/src/app"
-      - "../Node-Media-Server:/usr/src/app/node_modules/node-media-server"
+      - "./tmp-node-modules:/usr/src/app/node_modules"
+      # - "../Node-Media-Server:/usr/src/app/node_modules/node-media-server"
     ports:
       - 1235:1235
     working_dir: /usr/src/app
     command: npm run start-docker
+    depends_on: 
+      - api
     labels:
       - "traefik.http.routers.web.entrypoints=http, traefik"
       - "traefik.http.routers.web.priority=1"

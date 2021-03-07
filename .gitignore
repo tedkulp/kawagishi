@@ -8,3 +8,5 @@ tmp
 thumbnails
 test_stream.sh
 video
+tmp-node-modules
+*.tar.xz

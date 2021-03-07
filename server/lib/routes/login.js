@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const jwt = require('jsonwebtoken');
+
 const { check, validationResult } = require('express-validator');
+const { sign } = require('../auth/jwt');
 
 const handleResponse = (res, code, statusMsg) => {
     res.status(code).json(statusMsg);
@@ -35,11 +36,7 @@ router.post('/', loginChecks, (req, res, next) => {
             return handleResponse(res, 400, { error: err });
         }
 
-        const token = jwt.sign(
-            user,
-            process.env.JWT_SECRET ||
-                'lksfkljuwlksjwelkjsdlkjsdlkjweoiseijlxlvkjsldkfjewoirwlkjsdfklj'
-        );
+        const token = sign(user);
         handleResponse(res, 200, { user, token });
     })(req, res, next);
 });

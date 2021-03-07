@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const { check, validationResult } = require('express-validator');
+const { logger } = require('../util/logger');
 
 const { User } = require('../database');
 
@@ -44,6 +45,8 @@ const signupChecks = [
 
 router.post('/', signupChecks, (req, res, next) => {
     const errors = validationResult(req);
+
+    logger.debug(['errors', errors]);
 
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
